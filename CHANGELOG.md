@@ -1,3 +1,8 @@
+#### 2017-02-05 - 1.1.1
+* Added unless support for sysctl
+* Merge c33s puppet4 into master branch
+* Remove backwards compatibility, for that return thias fork
+
 #### 2016-08-02 - 1.0.6-puppet4
 * Create a Puppet 4 branch to take advantage of improved hiera lookups
 * Because Puppet 4 is a major upgrade that breaks many things, this is not
