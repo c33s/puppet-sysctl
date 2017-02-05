@@ -71,7 +71,10 @@ sysctl::base::values:
   net.core.somaxconn:
     value: '65536'
   vm.swappiness:
-    ensure: absent
+    ensure: absent  
+  net.ipv4.ip_local_port_range:
+    value: '1024 65535'
+    unless: '1024\t65535'
 ```
 
 ## Original /etc/sysctl.d entries

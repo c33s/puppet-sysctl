@@ -1,3 +1,6 @@
+#### 2017-02-05 - 1.0.7-puppet3
+* Added unless support for sysctl
+
 #### 2016-02-05 - 1.0.6
 * Revert previous incorrect change, more work is needed to cover all cases.
 

@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+class sysctl (Boolean $purge,
+              Hash    $values,
+              Boolean $symlink99,
+              String  $sysctl_binary,
+              Boolean $sysctl_dir,
+              String  $sysctl_dir_path,
+              String  $sysctl_dir_owner,
+              String  $sysctl_dir_group,
+              String  $sysctl_dir_mode) {
+
+  $defaults = {
+    sysctl_binary   => $sysctl_binary,
+    sysctl_dir_path => $sysctl_dir_path,
+=======
 # Define: sysctl
 #
 # Manage sysctl variable values.
@@ -17,6 +32,7 @@
 define sysctl (
   $ensure  = undef,
   $value   = undef,
+  $unless  = undef,
   $prefix  = undef,
   $suffix  = '.conf',
   $comment = undef,
@@ -45,34 +61,28 @@ define sysctl (
   } else {
     $file_content = template("${module_name}/sysctl.d-file.erb")
     $file_source = undef
+>>>>>>> cad7a8a4454888447d686259b270075b6e74afa3
   }
+  create_resources(sysctl::configuration, $values, $defaults)
 
-  if $ensure != 'absent' {
-
-    # Present
-
-    # The permanent change
-    file { "/etc/sysctl.d/${sysctl_d_file}":
-      ensure  => $ensure,
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => $file_content,
-      source  => $file_source,
-      notify  => [
-        Exec["sysctl-${title}"],
-        Exec["update-sysctl.conf-${title}"],
-      ],
+  if $sysctl_dir {
+    # if we're purging we should also recurse
+    $recurse = $purge
+    file { $sysctl_dir_path:
+      ensure  => directory,
+      owner   => $sysctl_dir_owner,
+      group   => $sysctl_dir_group,
+      mode    => $sysctl_dir_mode,
+      purge   => $purge,
+      recurse => $recurse,
     }
 
-    # The immediate change + re-check on each run "just in case"
-    exec { "sysctl-${title}":
-      command     => "sysctl -p /etc/sysctl.d/${sysctl_d_file}",
-      path        => [ '/usr/sbin', '/sbin', '/usr/bin', '/bin' ],
-      refreshonly => true,
-      require     => File["/etc/sysctl.d/${sysctl_d_file}"],
-    }
-
+<<<<<<< HEAD
+    if $symlink99 and $sysctl_dir_path =~ /^\/etc\/[^\/]+$/ {
+      file { "${sysctl_dir_path}/99-sysctl.conf":
+        ensure => link,
+        target => '../sysctl.conf',
+=======
     # For the few original values from the main file
     exec { "update-sysctl.conf-${title}":
       command     => "sed -i -e 's#^${title} *=.*#${title} = ${value}#' /etc/sysctl.conf",
@@ -88,23 +98,17 @@ define sysctl (
       # Convert any numerical to expected string, 0 instead of '0' would fail
       # lint:ignore:only_variable_string Convert numerical to string
       $qvalue = shellquote("${value}")
+      if $validate {
+        $rvalue = shellquote("${unless}")
+      } else {
+        $rvalue = $qvalue
+      }
       # lint:endignore
       exec { "enforce-sysctl-value-${qtitle}":
-          unless  => "/usr/bin/test \"$(/sbin/sysctl -n ${qtitle})\" = ${qvalue}",
+          unless  => "/usr/bin/test \"$(/sbin/sysctl -n ${qtitle})\" = \"$(/bin/echo -e '${rvalue}')\"",
           command => "/sbin/sysctl -w ${qtitle}=${qvalue}",
+>>>>>>> cad7a8a4454888447d686259b270075b6e74afa3
       }
     }
-
-  } else {
-
-    # Absent
-    # We cannot restore values, since defaults can not be known... reboot :-/
-
-    file { "/etc/sysctl.d/${sysctl_d_file}":
-      ensure => absent,
-    }
-
   }
-
 }
-
